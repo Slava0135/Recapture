@@ -20,10 +20,19 @@ public class Recapture extends Plugin {
     @Override
     public void init() {
         Timer.schedule(() -> {
-            for (var team : Vars.state.teams.active) {
+            var teams = Vars.state.teams.present;
+            for (var team : teams) {
                 for (var core : team.cores) {
-                    var enemy = Units.closestEnemy(team.team, core.x, core.y, distance, unit -> !unit.spawnedByCore);
-                    if (enemy != null) {
+                    boolean[] contested = {false};
+                    for (var anotherTeam : teams) {
+                        if(anotherTeam.team == team.team) continue;
+                        Units.nearby(anotherTeam.team, core.x - distance, core.y - distance, 2 * distance, 2 * distance, u -> {
+                            if (!u.spawnedByCore) {
+                                contested[0] = true;
+                            }
+                        });
+                    }
+                    if (contested[0]) {
                         var point = new Point2(core.tile.x, core.tile.y);
                         underContest.putIfAbsent(point, 0);
                     }
@@ -58,10 +67,17 @@ public class Recapture extends Plugin {
                     }
                 });
 
+                boolean[] hold = {false};
+                Units.nearby(core.team, core.x - distance, core.y - distance, 2 * distance, 2 * distance, u -> {
+                    if (!u.spawnedByCore) {
+                        hold[0] = true;
+                    }
+                });
+
                 var newProgress = 0;
                 if (!contested[0]) {
                     newProgress = progress - 5; //no enemies nearby
-                } else if (inProgress[0] && Units.closest(tile.team(), core.x, core.y, distance, u -> !u.spawnedByCore) == null) {
+                } else if (inProgress[0] && !hold[0]) {
                     newProgress = progress + 5; //no allies nearby
                 }
 
