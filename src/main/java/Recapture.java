@@ -1,5 +1,4 @@
 import arc.Events;
-import arc.util.Log;
 import arc.util.Timer;
 import mindustry.entities.Units;
 import mindustry.game.EventType;
@@ -13,11 +12,12 @@ public class Recapture extends Plugin {
         Events.on(EventType.BlockDestroyEvent.class, e -> {
             if (e.tile.build instanceof CoreBlock.CoreBuild){
                 var tile = e.tile;
-                var team = e.tile.build.team;
+                var oldTeam = e.tile.build.team;
                 var block = e.tile.build.block;
                 Timer.schedule(() -> {
-                    var closestEnemy = Units.closestEnemy(team, tile.worldx(), tile.worldy(), 10000000, u -> true);
-                    tile.setBlock(block, closestEnemy != null ? closestEnemy.team : Team.derelict);
+                    var closestEnemy = Units.closestEnemy(oldTeam, tile.worldx(), tile.worldy(), 10000000, u -> true);
+                    var newTeam = closestEnemy != null ? closestEnemy.team : Team.derelict;
+                    tile.setBlock(block, newTeam, 0, () -> block.newBuilding().create(block, newTeam));
                 }, 0.1f);
             }
         });
