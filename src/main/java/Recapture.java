@@ -1,4 +1,5 @@
 import arc.math.geom.Point2;
+import arc.util.Log;
 import arc.util.Timer;
 import mindustry.Vars;
 import mindustry.content.Fx;
@@ -25,7 +26,7 @@ public class Recapture extends Plugin {
                     var enemy = Units.closestEnemy(team.team, core.x, core.y, distance, unit -> true);
                     if (enemy != null) {
                         var point = new Point2(core.tile.x, core.tile.y);
-                        underContest.putIfAbsent(point, 10);
+                        underContest.putIfAbsent(point, 0);
                     }
                 }
             }
@@ -63,6 +64,7 @@ public class Recapture extends Plugin {
                     newProgress = progress + 10; //no allies nearby
                 }
 
+                Log.info(progress);
 
                 if (newProgress <= 0) {
                     it.remove();
@@ -78,6 +80,6 @@ public class Recapture extends Plugin {
 
     void captureCore(CoreBuild core, Team team) {
         Call.effectReliable(Fx.upgradeCore, core.x, core.y, core.block.size, team.color);
-        core.team = team;
+        core.tile.setNet(core.block, team, 0);
     }
 }
