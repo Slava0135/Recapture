@@ -1,26 +1,74 @@
-import arc.Events;
+import arc.math.geom.Point2;
 import arc.util.Timer;
+import mindustry.Vars;
 import mindustry.content.Fx;
 import mindustry.entities.Units;
-import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.gen.Call;
 import mindustry.mod.Plugin;
-import mindustry.world.blocks.storage.*;
+import mindustry.world.blocks.storage.CoreBlock.*;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Recapture extends Plugin {
+    final float distance = 64;
+    HashMap<Point2, Integer> underContest = new HashMap<>();
+
     @Override
     public void init() {
-        Events.on(EventType.BlockDestroyEvent.class, e -> {
-            if (e.tile.build instanceof CoreBlock.CoreBuild){
-                var tile = e.tile;
-                var oldTeam = e.tile.build.team;
-                var block = e.tile.build.block;
-                var closestEnemy = Units.closestEnemy(oldTeam, tile.worldx(), tile.worldy(), 10000000, u -> true);
-                var newTeam = closestEnemy != null ? closestEnemy.team : Team.derelict;
-                Call.effectReliable(Fx.upgradeCore, tile.build.x, tile.build.y, block.size, newTeam.color);
-                Timer.schedule(() -> tile.setNet(block, newTeam, 0), 0.6f);
+        Timer.schedule(() -> {
+            for (var team : Vars.state.teams.active) {
+                for (var core : team.cores) {
+                    var enemy = Units.closestEnemy(team.team, core.x, core.y, distance, unit -> true);
+                    if (enemy != null) {
+                        var point = new Point2(core.tile.x, core.tile.y);
+                        underContest.putIfAbsent(point, 0);
+                    }
+                }
             }
-        });
+            for (Iterator<Map.Entry<Point2, Integer>> it = underContest.entrySet().iterator(); it.hasNext(); ) {
+
+                Map.Entry<Point2, Integer> entry = it.next();
+
+                var point = entry.getKey();
+                var progress = entry.getValue();
+
+                var tile = Vars.world.tileBuilding(point.x, point.y);
+                if (tile == null || !(tile.build instanceof CoreBuild)) {
+                    it.remove();
+                    continue;
+                }
+
+                AtomicReference<Team> firstTeam = new AtomicReference<>();
+                boolean[] contested = {false};
+                boolean[] inProgress = {true};
+                Units.nearbyEnemies(tile.team(), tile.worldx(), tile.worldy(), distance, distance, u -> {
+                    contested[0] = true;
+                    if (firstTeam.get() == null) {
+                        firstTeam.set(u.team);
+                    } else {
+                        if (firstTeam.get() != u.team) { //more than one team present nearby
+                            inProgress[0] = false;
+                        }
+                    }
+                });
+
+                if (!contested[0]) {
+                    underContest.put(point, entry.getValue() - 10); //no enemies nearby
+                } else if (inProgress[0] && Units.closest(tile.team(), tile.worldx(), tile.worldy(), distance, u -> true) == null) {
+                    underContest.put(point, entry.getValue() + 10); //no allies nearby
+                }
+
+
+            }
+        }, 0, 1f);
+    }
+
+    void captureCore(CoreBuild core, Team team) {
+        Call.effectReliable(Fx.upgradeCore, core.x, core.y, core.block.size, team.color);
+        core.team = team;
     }
 }
