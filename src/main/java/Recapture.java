@@ -17,7 +17,9 @@ public class Recapture extends Plugin {
                 Timer.schedule(() -> {
                     var closestEnemy = Units.closestEnemy(oldTeam, tile.worldx(), tile.worldy(), 10000000, u -> true);
                     var newTeam = closestEnemy != null ? closestEnemy.team : Team.derelict;
-                    tile.setBlock(block, newTeam, 0, () -> block.newBuilding().create(block, newTeam));
+                    var newCore = block.newBuilding().create(block, newTeam);
+                    tile.setBlock(block, newTeam, 0, () -> newCore);
+                    newCore.set(tile.worldx(), tile.worldy());
                 }, 0.1f);
             }
         });
