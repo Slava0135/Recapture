@@ -12,6 +12,7 @@ dependencies {
     compileOnly 'com.github.Anuken.Mindustry:core:+'
 }
 
-compileJava {
-    options.encoding = "UTF-8"
+jar {
+    archiveFileName = "${project.name}-${project.version}.jar"
+    from configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
 }

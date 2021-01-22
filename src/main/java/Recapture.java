@@ -7,7 +7,7 @@ import mindustry.mod.Plugin;
 import mindustry.world.Edges;
 import mindustry.world.blocks.storage.*;
 
-public class Main extends Plugin {
+public class Recapture extends Plugin {
     @Override
     public void init() {
         Events.on(EventType.BlockDestroyEvent.class, e -> {
