@@ -1,6 +1,7 @@
 import arc.Events;
 import arc.util.Timer;
 import mindustry.Vars;
+import mindustry.entities.Units;
 import mindustry.game.EventType;
 import mindustry.game.Team;
 import mindustry.mod.Plugin;
@@ -15,29 +16,10 @@ public class Recapture extends Plugin {
                 var tile = e.tile;
                 var block = e.tile.build.block;
                 Timer.schedule(() -> {
-                    tile.setBlock(block, Team.derelict); //replace destroyed core with new derelict one after delay
+                    var closestEnemy = Units.closestEnemy(tile.team(), tile.x, tile.y, block.size * 4, u -> true);
+                    tile.setBlock(block, closestEnemy != null ? closestEnemy.team : Team.derelict);
                 }, 0.1f);
             }
         });
-
-        Timer.schedule(() -> {
-            for (var team : Vars.state.teams.active) {
-                for (var core : team.cores) {
-                    var enemyBlocks = 0;
-                    Team firstEnemy = null;
-                    for (var edge : Edges.getEdges(core.block.size)) { //iterate through all blocks around the core (except corners)
-                        var nearby = Vars.world.tileBuilding(core.tile.x + edge.x, core.tile.y + edge.y);
-                        if (nearby.team() == core.team) break;
-                        if (firstEnemy == null || firstEnemy == nearby.team()) {
-                            enemyBlocks++;
-                            firstEnemy = nearby.team();
-                        } else break; //another enemy team nearby
-                    }
-                    if(enemyBlocks == core.block.size * 4){
-                        core.team = firstEnemy; //capture core if all blocks around the core are owned by a single enemy team
-                    }
-                }
-            }
-        }, 0, 0.1f);
     }
 }
