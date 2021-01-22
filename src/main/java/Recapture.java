@@ -46,12 +46,12 @@ public class Recapture extends Plugin {
                 AtomicReference<Team> firstTeam = new AtomicReference<>();
                 boolean[] contested = {false};
                 boolean[] inProgress = {true};
-                Units.nearbyEnemies(tile.team(), tile.worldx(), tile.worldy(), distance, distance, u -> {
+                Units.nearbyEnemies(tile.team(), tile.worldx() - distance, tile.worldy() - distance, 2 * distance, 2 * distance, u -> {
                     contested[0] = true;
                     if (firstTeam.get() == null) {
                         firstTeam.set(u.team);
                     } else {
-                        if (firstTeam.get() != u.team) { //more than one team present nearby
+                        if (firstTeam.get() != u.team && tile.team() == Team.derelict) { //more than one team present nearby
                             inProgress[0] = false;
                         }
                     }
