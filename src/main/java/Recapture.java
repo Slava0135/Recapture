@@ -14,12 +14,13 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Recapture extends Plugin {
-    final float distance = 64;
+    final float distance = 80;
     HashMap<Point2, Integer> underContest = new HashMap<>();
 
     @Override
     public void init() {
         Timer.schedule(() -> {
+
             var teams = Vars.state.teams.present;
             for (var team : teams) {
                 for (var core : team.cores) {
@@ -38,6 +39,7 @@ public class Recapture extends Plugin {
                     }
                 }
             }
+
             for (Iterator<Map.Entry<Point2, Integer>> it = underContest.entrySet().iterator(); it.hasNext(); ) {
 
                 Map.Entry<Point2, Integer> entry = it.next();
@@ -74,11 +76,11 @@ public class Recapture extends Plugin {
                     }
                 });
 
-                var newProgress = 0;
+                var newProgress = progress;
                 if (!contested[0]) {
-                    newProgress = progress - 5; //no enemies nearby
+                    newProgress -= 5; //no enemies nearby
                 } else if (inProgress[0] && !hold[0]) {
-                    newProgress = progress + 5; //no allies nearby
+                    newProgress += 5; //no allies nearby
                 }
 
                 if (newProgress <= 0) {
@@ -96,6 +98,7 @@ public class Recapture extends Plugin {
                     Call.label(String.valueOf(newProgress), 0.5f, core.x, core.y);
                 }
             }
+
         }, 0, 0.5f);
     }
 
