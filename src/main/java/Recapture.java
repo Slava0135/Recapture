@@ -3,6 +3,7 @@ import arc.util.Timer;
 import mindustry.entities.Units;
 import mindustry.game.EventType;
 import mindustry.game.Team;
+import mindustry.gen.Call;
 import mindustry.mod.Plugin;
 import mindustry.world.blocks.storage.*;
 
@@ -18,7 +19,7 @@ public class Recapture extends Plugin {
                     var closestEnemy = Units.closestEnemy(oldTeam, tile.worldx(), tile.worldy(), 10000000, u -> true);
                     var newTeam = closestEnemy != null ? closestEnemy.team : Team.derelict;
                     tile.setBlock(block, newTeam);
-                    Events.fire(new EventType.BlockBuildEndEvent(tile, closestEnemy, newTeam, false, null));
+                    Call.setTile(tile, block, newTeam, 0);
                 }, 0.1f);
             }
         });
