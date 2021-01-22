@@ -1,5 +1,4 @@
 import arc.math.geom.Point2;
-import arc.util.Log;
 import arc.util.Timer;
 import mindustry.Vars;
 import mindustry.content.Fx;
