@@ -25,7 +25,7 @@ public class Recapture extends Plugin {
                     var enemy = Units.closestEnemy(team.team, core.x, core.y, distance, unit -> true);
                     if (enemy != null) {
                         var point = new Point2(core.tile.x, core.tile.y);
-                        underContest.putIfAbsent(point, 0);
+                        underContest.putIfAbsent(point, 10);
                     }
                 }
             }
@@ -56,13 +56,22 @@ public class Recapture extends Plugin {
                     }
                 });
 
+                var newProgress = 0;
                 if (!contested[0]) {
-                    underContest.put(point, entry.getValue() - 10); //no enemies nearby
+                    newProgress = progress - 10; //no enemies nearby
                 } else if (inProgress[0] && Units.closest(tile.team(), tile.worldx(), tile.worldy(), distance, u -> true) == null) {
-                    underContest.put(point, entry.getValue() + 10); //no allies nearby
+                    newProgress = progress + 10; //no allies nearby
                 }
 
 
+                if (newProgress <= 0) {
+                    it.remove();
+                } else if (newProgress >= 100){
+                    it.remove();
+                    captureCore((CoreBuild) tile.build, firstTeam.get());
+                } else {
+                    underContest.put(point, newProgress);
+                }
             }
         }, 0, 1f);
     }
