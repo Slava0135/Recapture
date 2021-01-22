@@ -69,10 +69,14 @@ public class Recapture extends Plugin {
                     it.remove();
                 } else if (newProgress >= 100){
                     it.remove();
-                    captureCore((CoreBuild) tile.build, firstTeam.get());
+                    if (core.team != Team.derelict) {
+                        captureCore((CoreBuild) tile.build, Team.derelict);
+                    } else {
+                        captureCore((CoreBuild) tile.build, firstTeam.get());
+                    }
                 } else {
                     underContest.put(point, newProgress);
-                    Call.effectReliable(Fx.placeBlock, core.x, core.y, distance / 8, core.team.color);
+                    Call.effectReliable(Fx.placeBlock, core.x, core.y, distance / 4, core.team.color);
                     Call.label(String.valueOf(newProgress), 0.5f, core.x, core.y);
                 }
             }
@@ -81,7 +85,7 @@ public class Recapture extends Plugin {
 
     void captureCore(CoreBuild core, Team team) {
         Call.effectReliable(Fx.upgradeCore, core.x, core.y, core.block.size, team.color);
-        Call.label("Captured!", 1, core.x, core.y);
+        if (team != Team.derelict) Call.label("Captured!", 1, core.x, core.y);
         core.tile.setNet(core.block, team, 0);
     }
 }
