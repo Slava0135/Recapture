@@ -1,7 +1,7 @@
 {
   "name": "Recapture",
-  "description": "Allows to capture cores.",
+  "description": "Allows teams to capture cores.",
   "author": "Slava0135",
   "main": "Recapture",
-  "version": "1.0"
+  "version": "1.1"
 }
