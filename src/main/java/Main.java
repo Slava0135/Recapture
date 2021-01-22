@@ -25,18 +25,16 @@ public class Main extends Plugin {
                 for (var core : team.cores) {
                     var enemyBlocks = 0;
                     Team firstEnemy = null;
-                    for (var edge : Edges.getEdges(core.block.size)) {
+                    for (var edge : Edges.getEdges(core.block.size)) { //iterate through all blocks around the core (except corners)
                         var nearby = Vars.world.tileBuilding(core.tile.x + edge.x, core.tile.y + edge.y);
-
                         if (nearby.team() == core.team) break;
-
                         if (firstEnemy == null || firstEnemy == nearby.team()) {
                             enemyBlocks++;
                             firstEnemy = nearby.team();
-                        } else break;
+                        } else break; //another enemy team nearby
                     }
                     if(enemyBlocks == core.block.size * 4){
-                        core.team = firstEnemy;
+                        core.team = firstEnemy; //capture core if all blocks around the core are owned by a single enemy team
                     }
                 }
             }
