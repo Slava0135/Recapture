@@ -12,9 +12,10 @@ public class Recapture extends Plugin {
         Events.on(EventType.BlockDestroyEvent.class, e -> {
             if (e.tile.build instanceof CoreBlock.CoreBuild){
                 var tile = e.tile;
+                var team = e.tile.build.team;
                 var block = e.tile.build.block;
                 Timer.schedule(() -> {
-                    var closestEnemy = Units.closestEnemy(tile.team(), tile.x, tile.y, block.size * 4, u -> true);
+                    var closestEnemy = Units.closestEnemy(team, tile.worldx(), tile.worldy(), 64 * block.size, u -> true);
                     tile.setBlock(block, closestEnemy != null ? closestEnemy.team : Team.derelict);
                 }, 0.1f);
             }
