@@ -1,0 +1,7 @@
+{
+  "name": "Recapture",
+  "description": "Allows to capture cores. Instead of destroying them you convert them to Derelict ones.",
+  "author": "Slava0135",
+  "main": "Recapture",
+  "version": "1.0"
+}
