@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Recapture extends Plugin {
-    final float distance = 64;
+    final float distance = 32;
     HashMap<Point2, Integer> underContest = new HashMap<>();
 
     @Override
@@ -43,10 +43,12 @@ public class Recapture extends Plugin {
                     continue;
                 }
 
+                var core = (CoreBuild) tile.build;
+
                 AtomicReference<Team> firstTeam = new AtomicReference<>();
                 boolean[] contested = {false};
                 boolean[] inProgress = {true};
-                Units.nearbyEnemies(tile.team(), tile.worldx() - distance, tile.worldy() - distance, 2 * distance, 2 * distance, u -> {
+                Units.nearbyEnemies(tile.team(), core.x - distance, core.y - distance, 2 * distance, 2 * distance, u -> {
                     contested[0] = true;
                     if (firstTeam.get() == null) {
                         firstTeam.set(u.team);
@@ -59,12 +61,10 @@ public class Recapture extends Plugin {
 
                 var newProgress = 0;
                 if (!contested[0]) {
-                    newProgress = progress - 10; //no enemies nearby
-                } else if (inProgress[0] && Units.closest(tile.team(), tile.worldx(), tile.worldy(), distance, u -> true) == null) {
-                    newProgress = progress + 10; //no allies nearby
+                    newProgress = progress - 5; //no enemies nearby
+                } else if (inProgress[0] && Units.closest(tile.team(), core.x, core.y, distance, u -> true) == null) {
+                    newProgress = progress + 5; //no allies nearby
                 }
-
-                Log.info(progress);
 
                 if (newProgress <= 0) {
                     it.remove();
@@ -73,13 +73,15 @@ public class Recapture extends Plugin {
                     captureCore((CoreBuild) tile.build, firstTeam.get());
                 } else {
                     underContest.put(point, newProgress);
+                    Call.label(String.valueOf(newProgress), 0.5f, core.x, core.y);
                 }
             }
-        }, 0, 1f);
+        }, 0, 0.5f);
     }
 
     void captureCore(CoreBuild core, Team team) {
         Call.effectReliable(Fx.upgradeCore, core.x, core.y, core.block.size, team.color);
+        Call.label("Captured!", 1, core.x, core.y);
         core.tile.setNet(core.block, team, 0);
     }
 }
