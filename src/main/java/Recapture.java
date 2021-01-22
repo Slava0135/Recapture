@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Recapture extends Plugin {
-    final float distance = 32;
+    final float distance = 64;
     HashMap<Point2, Integer> underContest = new HashMap<>();
 
     @Override
@@ -22,7 +22,7 @@ public class Recapture extends Plugin {
         Timer.schedule(() -> {
             for (var team : Vars.state.teams.active) {
                 for (var core : team.cores) {
-                    var enemy = Units.closestEnemy(team.team, core.x, core.y, distance, unit -> true);
+                    var enemy = Units.closestEnemy(team.team, core.x, core.y, distance, unit -> !unit.spawnedByCore);
                     if (enemy != null) {
                         var point = new Point2(core.tile.x, core.tile.y);
                         underContest.putIfAbsent(point, 0);
@@ -48,7 +48,7 @@ public class Recapture extends Plugin {
                 boolean[] contested = {false};
                 boolean[] inProgress = {true};
                 Units.nearbyEnemies(tile.team(), core.x - distance, core.y - distance, 2 * distance, 2 * distance, u -> {
-                    contested[0] = true;
+                    if (!u.spawnedByCore) contested[0] = true;
                     if (firstTeam.get() == null) {
                         firstTeam.set(u.team);
                     } else {
@@ -61,7 +61,7 @@ public class Recapture extends Plugin {
                 var newProgress = 0;
                 if (!contested[0]) {
                     newProgress = progress - 5; //no enemies nearby
-                } else if (inProgress[0] && Units.closest(tile.team(), core.x, core.y, distance, u -> true) == null) {
+                } else if (inProgress[0] && Units.closest(tile.team(), core.x, core.y, distance, u -> !u.spawnedByCore) == null) {
                     newProgress = progress + 5; //no allies nearby
                 }
 
@@ -72,6 +72,7 @@ public class Recapture extends Plugin {
                     captureCore((CoreBuild) tile.build, firstTeam.get());
                 } else {
                     underContest.put(point, newProgress);
+                    Call.effectReliable(Fx.breakBlock, core.x, core.y, distance, core.team.color);
                     Call.label(String.valueOf(newProgress), 0.5f, core.x, core.y);
                 }
             }
