@@ -9,12 +9,17 @@ repositories {
     mavenCentral()
 }
 
+
+
 ext{
     pluginVersion = {
         def configFile = file("$rootDir/src/main/resources/plugin.json")
         def json = new JsonSlurper().parseText(configFile.text)
         return json.version
     }
+
+    targetCompatibility = 8
+    sourceCompatibility = 14
 }
 
 version = "${project.pluginVersion()}"
