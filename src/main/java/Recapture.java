@@ -72,7 +72,7 @@ public class Recapture extends Plugin {
                     captureCore((CoreBuild) tile.build, firstTeam.get());
                 } else {
                     underContest.put(point, newProgress);
-                    Call.effectReliable(Fx.breakBlock, core.x, core.y, distance, core.team.color);
+                    Call.effectReliable(Fx.breakBlock, core.x, core.y, distance / 8, core.team.color);
                     Call.label(String.valueOf(newProgress), 0.5f, core.x, core.y);
                 }
             }
