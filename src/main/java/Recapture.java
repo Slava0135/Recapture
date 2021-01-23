@@ -1,5 +1,6 @@
 import arc.math.geom.Point2;
 import arc.struct.Seq;
+import arc.util.Align;
 import arc.util.Timer;
 import mindustry.Vars;
 import mindustry.content.Fx;
@@ -107,7 +108,12 @@ public class Recapture extends Plugin {
 
     void captureCore(CoreBuild core, Team team) {
         Call.effectReliable(Fx.upgradeCore, core.x, core.y, core.block.size, team.color);
-        if (team != Team.derelict) Call.label("Captured!", 1, core.x, core.y);
+        if (team != Team.derelict) {
+            Call.label("Captured!", 1, core.x, core.y);
+            Call.infoPopup(
+                    "Team [#" + team.color.toString() + "]" + team.name + " []captured" + "core at " + core.tile.x + ", " + core.tile.y
+                    , 5f, Align.center, 0, 0, 0, 0);
+        }
         core.tile.setNet(core.block, team, 0);
     }
 }
