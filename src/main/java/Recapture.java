@@ -111,7 +111,7 @@ public class Recapture extends Plugin {
         if (team != Team.derelict) {
             Call.label("Captured!", 1, core.x, core.y);
             Call.infoPopup(
-                    "Team [#" + team.color.toString() + "]" + team.name + " []captured" + "core at " + core.tile.x + ", " + core.tile.y
+                    "Team [#" + team.color.toString() + "]" + team.name + " []captured " + "core at " + core.tile.x + ", " + core.tile.y
                     , 5f, Align.center, 0, 0, 0, 0);
         }
         core.tile.setNet(core.block, team, 0);
