@@ -1,11 +1,14 @@
 import arc.math.geom.Point2;
+import arc.struct.Seq;
 import arc.util.Timer;
 import mindustry.Vars;
 import mindustry.content.Fx;
 import mindustry.entities.Units;
 import mindustry.game.Team;
+import mindustry.game.Teams.*;
 import mindustry.gen.Call;
 import mindustry.mod.Plugin;
+import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock.*;
 
 import java.util.HashMap;
@@ -21,11 +24,11 @@ public class Recapture extends Plugin {
     public void init() {
         Timer.schedule(() -> {
 
-            var teams = Vars.state.teams.present;
-            for (var team : teams) {
-                for (var core : team.cores) {
+            Seq<TeamData> teams = Vars.state.teams.present;
+            for (TeamData team : teams) {
+                for (CoreBuild core : team.cores) {
                     boolean[] contested = {false};
-                    for (var anotherTeam : teams) {
+                    for (TeamData anotherTeam : teams) {
                         if(anotherTeam.team == team.team) continue;
                         Units.nearby(anotherTeam.team, core.x - distance, core.y - distance, 2 * distance, 2 * distance, u -> {
                             if (!u.spawnedByCore) {
@@ -34,7 +37,7 @@ public class Recapture extends Plugin {
                         });
                     }
                     if (contested[0]) {
-                        var point = new Point2(core.tile.x, core.tile.y);
+                        Point2 point = new Point2(core.tile.x, core.tile.y);
                         underContest.putIfAbsent(point, 0);
                     }
                 }
@@ -44,16 +47,16 @@ public class Recapture extends Plugin {
 
                 Map.Entry<Point2, Integer> entry = it.next();
 
-                var point = entry.getKey();
-                var progress = entry.getValue();
+                Point2 point = entry.getKey();
+                int progress = entry.getValue();
 
-                var tile = Vars.world.tileBuilding(point.x, point.y);
+                Tile tile = Vars.world.tileBuilding(point.x, point.y);
                 if (tile == null || !(tile.build instanceof CoreBuild)) {
                     it.remove();
                     continue;
                 }
 
-                var core = (CoreBuild) tile.build;
+                CoreBuild core = (CoreBuild) tile.build;
 
                 AtomicReference<Team> firstTeam = new AtomicReference<>();
                 boolean[] contested = {false};
@@ -76,7 +79,7 @@ public class Recapture extends Plugin {
                     }
                 });
 
-                var newProgress = progress;
+                int newProgress = progress;
                 if (!contested[0]) {
                     newProgress -= 5; //no enemies nearby
                 } else if (inProgress[0] && !hold[0]) {
