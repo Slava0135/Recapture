@@ -26,7 +26,7 @@ public class Recapture extends Plugin {
     float sizeMultiplier = -1f;
 
     int messageQueue = 0;
-    int messageLimit = 3;
+    int messageLimit = 5;
 
     HashMap<Point2, Float> underContest = new HashMap<>();
 
@@ -135,12 +135,12 @@ public class Recapture extends Plugin {
             Call.label("[#" + team.color.toString() + "]Captured![]", 1, core.x, core.y);
             Call.infoPopup(
                     "Team [#" + team.color.toString() + "]" + team.name + " []captured " + "core at " + core.tile.x + ", " + core.tile.y
-                    , 5f, Align.center, 0, 0, 50 * messageQueue - 100 * messageLimit, 0);
+                    , 5f, Align.center, 0, 0, 50 * messageQueue - 50 * messageLimit, 0);
         } else {
             Call.label("[#" + core.team.color.toString() + "]Lost![]", 1, core.x, core.y);
             Call.infoPopup(
                     "Team [#" + core.team.color.toString() + "]" + team.name + " []lost " + "core at " + core.tile.x + ", " + core.tile.y
-                    , 5f, Align.center, 0, 0, 50 * messageQueue - 100 * messageLimit, 0);
+                    , 5f, Align.center, 0, 0, 50 * messageQueue - 50 * messageLimit, 0);
         }
         messageQueue = (messageQueue + 1) % messageLimit;
         core.tile.setNet(core.block, team, 0);
