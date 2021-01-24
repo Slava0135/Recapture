@@ -107,6 +107,7 @@ public class Recapture extends Plugin {
                 }
 
                 if (newProgress <= 0) {
+                    Call.label("0", 0.5f, core.x, core.y);
                     it.remove();
                 } else if (newProgress >= 100){
                     it.remove();
