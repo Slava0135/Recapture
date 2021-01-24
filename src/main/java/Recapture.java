@@ -26,7 +26,7 @@ public class Recapture extends Plugin {
     float sizeMultiplier = -1f;
 
     int messageQueue = 0;
-    int messageLimit = 5;
+    int messageLimit = 4;
 
     HashMap<Point2, Float> underContest = new HashMap<>();
 
