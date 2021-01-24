@@ -140,7 +140,7 @@ public class Recapture extends Plugin {
         } else {
             Call.label("[#" + oldTeam.color.toString() + "]Lost![]", 1, core.x, core.y);
             Call.infoPopup(
-                    "Team [#" + oldTeam + "]" + team.name + " []lost " + "core at " + core.tile.x + ", " + core.tile.y
+                    "Team [#" + oldTeam + "]" + oldTeam.name + " []lost " + "core at " + core.tile.x + ", " + core.tile.y
                     , 5f, Align.center, 0, 0, 50 * messageQueue - 50 * messageLimit, 0);
         }
         messageQueue = (messageQueue + 1) % messageLimit;
