@@ -12,17 +12,36 @@ import mindustry.mod.Plugin;
 import mindustry.world.Tile;
 import mindustry.world.blocks.storage.CoreBlock.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Recapture extends Plugin {
-    final float distance = 80;
-    HashMap<Point2, Integer> underContest = new HashMap<>();
+    float distance = -1;
+    float baseDelta = -1;
+    float sizeMultiplier = -1f;
+
+    HashMap<Point2, Float> underContest = new HashMap<>();
 
     @Override
     public void init() {
+
+        //load config
+        Properties props = new Properties();
+        try(InputStream resourceStream = Recapture.class.getResourceAsStream("config.properties")) {
+            props.load(resourceStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        distance = Float.parseFloat(props.getProperty("distance"));
+        baseDelta = Float.parseFloat(props.getProperty("baseDelta"));
+        sizeMultiplier = Float.parseFloat(props.getProperty("sizeMultiplier"));
+
         Timer.schedule(() -> {
 
             Seq<TeamData> teams = Vars.state.teams.present;
@@ -39,17 +58,17 @@ public class Recapture extends Plugin {
                     }
                     if (contested[0]) {
                         Point2 point = new Point2(core.tile.x, core.tile.y);
-                        underContest.putIfAbsent(point, 0);
+                        underContest.putIfAbsent(point, 0f);
                     }
                 }
             }
 
-            for (Iterator<Map.Entry<Point2, Integer>> it = underContest.entrySet().iterator(); it.hasNext(); ) {
+            for (Iterator<Map.Entry<Point2, Float>> it = underContest.entrySet().iterator(); it.hasNext(); ) {
 
-                Map.Entry<Point2, Integer> entry = it.next();
+                Map.Entry<Point2, Float> entry = it.next();
 
                 Point2 point = entry.getKey();
-                int progress = entry.getValue();
+                float progress = entry.getValue();
 
                 Tile tile = Vars.world.tileBuilding(point.x, point.y);
                 if (tile == null || !(tile.build instanceof CoreBuild)) {
@@ -60,31 +79,31 @@ public class Recapture extends Plugin {
                 CoreBuild core = (CoreBuild) tile.build;
 
                 AtomicReference<Team> firstTeam = new AtomicReference<>();
-                boolean[] contested = {false};
                 boolean[] inProgress = {true};
+
+                float[] delta = {baseDelta};
                 Units.nearbyEnemies(tile.team(), core.x - distance, core.y - distance, 2 * distance, 2 * distance, u -> {
-                    if (!u.spawnedByCore) contested[0] = true;
-                    if (firstTeam.get() == null) {
-                        firstTeam.set(u.team);
-                    } else {
-                        if (firstTeam.get() != u.team && tile.team() == Team.derelict) { //more than one team present nearby
-                            inProgress[0] = false;
+                    if (!u.spawnedByCore) {
+                        if (firstTeam.get() == null) {
+                            firstTeam.set(u.team);
+                        } else {
+                            if (firstTeam.get() != u.team && tile.team() == Team.derelict) { //more than one team present nearby
+                                inProgress[0] = false;
+                            } else if (inProgress[0]) {
+                                delta[0] += sizeMultiplier * u.hitSize;
+                            }
                         }
                     }
                 });
 
-                boolean[] hold = {false};
-                Units.nearby(core.team, core.x - distance, core.y - distance, 2 * distance, 2 * distance, u -> {
-                    if (!u.spawnedByCore) {
-                        hold[0] = true;
-                    }
-                });
-
-                int newProgress = progress;
-                if (!contested[0]) {
-                    newProgress -= 5; //no enemies nearby
-                } else if (inProgress[0] && !hold[0]) {
-                    newProgress += 5; //no allies nearby
+                float newProgress = progress;
+                if (inProgress[0]) {
+                    Units.nearby(tile.team(), core.x - distance, core.y - distance, 2 * distance, 2 * distance, u -> {
+                        if (!u.spawnedByCore) {
+                            delta[0] -= sizeMultiplier * u.hitSize;
+                        }
+                    });
+                    newProgress += delta[0];
                 }
 
                 if (newProgress <= 0) {
@@ -99,7 +118,7 @@ public class Recapture extends Plugin {
                 } else {
                     underContest.put(point, newProgress);
                     Call.effectReliable(Fx.placeBlock, core.x, core.y, distance / 4, core.team.color);
-                    Call.label(String.valueOf(newProgress), 0.5f, core.x, core.y);
+                    Call.label(String.valueOf((int) newProgress), 0.5f, core.x, core.y);
                 }
             }
 
@@ -109,7 +128,7 @@ public class Recapture extends Plugin {
     void captureCore(CoreBuild core, Team team) {
         Call.effectReliable(Fx.upgradeCore, core.x, core.y, core.block.size, team.color);
         if (team != Team.derelict) {
-            Call.label("Captured!", 1, core.x, core.y);
+            Call.label("[#" + team.color.toString() + "]Captured![]", 1, core.x, core.y);
             Call.infoPopup(
                     "Team [#" + team.color.toString() + "]" + team.name + " []captured " + "core at " + core.tile.x + ", " + core.tile.y
                     , 5f, Align.center, 0, 0, 0, 0);
