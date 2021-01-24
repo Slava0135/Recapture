@@ -134,7 +134,7 @@ public class Recapture extends Plugin {
                     "Team [#" + team.color.toString() + "]" + team.name + " []captured " + "core at " + core.tile.x + ", " + core.tile.y
                     , 5f, Align.center, 0, 0, 0, 0);
         } else {
-            Call.label("[#" + team.color.toString() + "]Lost![]", 1, core.x, core.y);
+            Call.label("[#" + core.team.color.toString() + "]Lost![]", 1, core.x, core.y);
             Call.infoPopup(
                     "Team [#" + core.team.color.toString() + "]" + team.name + " []lost " + "core at " + core.tile.x + ", " + core.tile.y
                     , 5f, Align.center, 0, 0, 0, 0);
