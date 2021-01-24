@@ -130,6 +130,7 @@ public class Recapture extends Plugin {
     }
 
     void captureCore(CoreBuild core, Team team) {
+        Team oldTeam = core.team;
         Call.effectReliable(Fx.upgradeCore, core.x, core.y, core.block.size, team.color);
         if (team != Team.derelict) {
             Call.label("[#" + team.color.toString() + "]Captured![]", 1, core.x, core.y);
@@ -137,9 +138,9 @@ public class Recapture extends Plugin {
                     "Team [#" + team.color.toString() + "]" + team.name + " []captured " + "core at " + core.tile.x + ", " + core.tile.y
                     , 5f, Align.center, 0, 0, 50 * messageQueue - 50 * messageLimit, 0);
         } else {
-            Call.label("[#" + core.team.color.toString() + "]Lost![]", 1, core.x, core.y);
+            Call.label("[#" + oldTeam.color.toString() + "]Lost![]", 1, core.x, core.y);
             Call.infoPopup(
-                    "Team [#" + core.team.color.toString() + "]" + team.name + " []lost " + "core at " + core.tile.x + ", " + core.tile.y
+                    "Team [#" + oldTeam + "]" + team.name + " []lost " + "core at " + core.tile.x + ", " + core.tile.y
                     , 5f, Align.center, 0, 0, 50 * messageQueue - 50 * messageLimit, 0);
         }
         messageQueue = (messageQueue + 1) % messageLimit;
